@@ -52,6 +52,10 @@ class MainWindow(Gtk.ApplicationWindow):
         apply_live_action=Gio.SimpleAction.new('apply_live', None)
         apply_live_action.connect("activate", self.apply_live)
         app.add_action(apply_live_action)
+        # About action
+        about_action=Gio.SimpleAction.new('about', None)
+        about_action.connect("activate", lambda *_: AboutPopup(self))
+        app.add_action(about_action)
 
         self.package_install_input.connect('activate', self.on_install_input)
         self.present()
@@ -110,7 +114,21 @@ class PopupMessage(Gtk.Dialog):
         label=Gtk.Label(label=text)
         self.set_child(label)
         self.present()
-    
+
+class AboutPopup(Gtk.AboutDialog):
+    def __init__(self, parent):
+        super().__init__(
+            authors=(
+                'epiccakeking',
+            ),
+            copyright='Copyright 2022 epiccakeking',
+            license_type='GTK_LICENSE_GPL_3_0',
+            program_name='RPM OSTree GUI',
+        )
+        self.set_modal(True)
+        self.set_transient_for(parent)
+        self.present()
+
 @templated
 class DeploymentInfoPage(Gtk.ScrolledWindow):
     __gtype_name__='DeploymentInfoPage'

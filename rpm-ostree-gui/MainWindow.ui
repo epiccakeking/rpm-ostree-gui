@@ -54,6 +54,10 @@ You should have received a copy of the GNU General Public License along with rpm
         <attribute name="label" translatable="yes">Update</attribute>
         <attribute name="action">app.update</attribute>
       </item>
+      <item>
+        <attribute name="label" translatable="yes">About</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
     </section>
   </menu>
   <object class="GtkPopover" id="add_menu">
