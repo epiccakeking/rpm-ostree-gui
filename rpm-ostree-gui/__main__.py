@@ -11,7 +11,7 @@ You should have received a copy of the GNU General Public License along with rpm
 """
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 import json
 import subprocess
 import threading
@@ -61,6 +61,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def load(self):
         data=json.loads(subprocess.run(('rpm-ostree', 'status', '--json'), stdout=subprocess.PIPE).stdout)
         self.set_child(DeploymentInfoPage(data['deployments'][0]))
+
     @spinthread
     def on_install_input(self, _e):
         self.add_menu.popdown()
@@ -68,8 +69,9 @@ class MainWindow(Gtk.ApplicationWindow):
         print(package_name)
         proc=subprocess.run(('rpm-ostree', 'install', package_name), stderr=subprocess.PIPE, text=True)
         if proc.returncode != 0:
-            PopupMessage(self, proc.stderr)
+            GLib.idle_add(self.popup_info, proc.stderr)
         self.load()
+
     @spinthread
     def uninstall_selected(self, _w, _e):
         selected_packages=[item.name_label.get_label() for item in self.get_child().package_list.get_selected_rows()]
@@ -78,25 +80,32 @@ class MainWindow(Gtk.ApplicationWindow):
         selected_packages.sort()
         proc=subprocess.run(['rpm-ostree', 'uninstall'] + selected_packages, stderr=subprocess.PIPE, text=True)
         if proc.returncode != 0:
-            PopupMessage(self, proc.stderr)
+            GLib.idle_add(self.popup_info, proc.stderr)
         self.load()
+
     @spinthread
     def update(self, _w, _e):
-        proc=subprocess.run(('rpm-ostree', 'upgrade'))
+        proc=subprocess.run(('rpm-ostree', 'upgrade'), stderr=subprocess.PIPE, text=True)
         if proc.returncode != 0:
-            PopupMessage(self, proc.stderr)
+            GLib.idle_add(self.popup_info, proc.stderr)
         self.load()
+
     @spinthread
     def apply_live(self, _w, _e):
-        proc=subprocess.run(('pkexec', 'rpm-ostree', 'ex', 'apply-live'))
+        proc=subprocess.run(('pkexec', 'rpm-ostree', 'ex', 'apply-live'), stderr=subprocess.PIPE, text=True)
         if proc.returncode != 0:
-            PopupMessage(self, proc.stderr)
+            GLib.idle_add(self.popup_info, proc.stderr)
         self.load()
-        
 
-class PopupMessage(Gtk.Window):
+    def popup_info(self, msg):
+        PopupMessage(self, msg)
+        return False
+
+
+class PopupMessage(Gtk.Dialog):
     def __init__(self, parent, text):
         super().__init__()
+        self.set_modal(True)
         self.set_transient_for(parent)
         label=Gtk.Label(label=text)
         self.set_child(label)
