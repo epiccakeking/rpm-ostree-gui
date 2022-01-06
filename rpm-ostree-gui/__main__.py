@@ -121,7 +121,7 @@ class PackageListItem(Gtk.ListBoxRow):
     
 
 # Create a new application
-app = Gtk.Application(application_id='io.github.epiccakeking.RpmOstreeCli')
+app = Gtk.Application(application_id='io.github.epiccakeking.RpmOstreeGui')
 app.connect('activate', MainWindow)
 
 # Run the application
