@@ -14,5 +14,6 @@ pip3 install rpm-ostree-gui
 From source:
 ```
 git clone https://github.com/epiccakeking/rpm-ostree-gui
+cd rpm-ostree-gui
 pip3 install .
 ```
