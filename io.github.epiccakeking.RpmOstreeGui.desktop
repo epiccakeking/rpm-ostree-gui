@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=RPM OSTree GUI
+Exec=python3 -m rpm-ostree-gui
+Terminal=True
+StartupWMClass=io.github.epiccakeking.RpmOstreeGui
