@@ -4,7 +4,7 @@ GUI application for managing RPMs via rpm-ostree.
 
 # Installation
 
-Note: You may need to install pip first
+Note: For search to work you will need to install python-hawkey.
 
 From PyPi:
 ```
