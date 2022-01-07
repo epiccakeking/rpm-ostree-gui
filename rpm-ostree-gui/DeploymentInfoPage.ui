@@ -10,7 +10,7 @@ rpm-ostree-gui is distributed in the hope that it will be useful, but WITHOUT AN
 You should have received a copy of the GNU General Public License along with rpm-ostree-gui. If not, see <https://www.gnu.org/licenses/>. 
 -->
 <interface>
-  <template class="DeploymentInfoPage" parent="GtkScrolledWindow">
+  <template class="PackageScroller" parent="GtkScrolledWindow">
     <child>
       <object class="GtkListBox" id="package_list">
         <property name="selection-mode">GTK_SELECTION_MULTIPLE</property>

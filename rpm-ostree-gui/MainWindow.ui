@@ -39,6 +39,9 @@ You should have received a copy of the GNU General Public License along with rpm
         </child>
       </object>
     </child>
+    <child>
+      <object class="GtkScrolledWindow" id="package_list"></object>
+    </child>
   </template>
   <menu id="main_menu">
     <section>
@@ -53,6 +56,10 @@ You should have received a copy of the GNU General Public License along with rpm
       <item>
         <attribute name="label" translatable="yes">Update</attribute>
         <attribute name="action">app.update</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Search</attribute>
+        <attribute name="action">app.search</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">About</attribute>

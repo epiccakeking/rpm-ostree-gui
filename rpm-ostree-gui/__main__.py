@@ -15,7 +15,22 @@ from gi.repository import Gtk, Gio, GLib
 import json
 import subprocess
 import threading
+import Levenshtein
 from pkg_resources import resource_string
+import glob
+try:
+    import hawkey
+except:
+    hawkey=None
+
+if hawkey:
+    sack=hawkey.Sack()
+    sack.load_system_repo()
+
+def search(query):
+    if not hawkey:
+        return []
+    return [x.name for x in hawkey.Query(sack).filter(name__glob=f'*{glob.escape(query)}*')]
 
 def templated(c):
     return Gtk.Template(string=resource_string(__name__, c.__gtype_name__+'.ui'))(c)
@@ -37,6 +52,7 @@ class MainWindow(Gtk.ApplicationWindow):
     add_menu=Gtk.Template.Child('add_menu')
     package_install_input = Gtk.Template.Child('package_install_input')
     spinner=Gtk.Template.Child('spinner')
+    package_list=Gtk.Template.Child('package_list')
     def __init__(self, app):
         super().__init__(application=app)
         self.thread_lock=threading.Lock()
@@ -56,6 +72,11 @@ class MainWindow(Gtk.ApplicationWindow):
         about_action=Gio.SimpleAction.new('about', None)
         about_action.connect("activate", lambda *_: AboutPopup(self))
         app.add_action(about_action)
+        # Search action
+        if hawkey:
+            search_action=Gio.SimpleAction.new('search', None)
+            search_action.connect("activate", lambda *_: SearchWindow(self))
+            app.add_action(search_action)
 
         self.package_install_input.connect('activate', self.on_install_input)
         self.present()
@@ -64,7 +85,7 @@ class MainWindow(Gtk.ApplicationWindow):
     @spinthread
     def load(self):
         data=json.loads(subprocess.run(('rpm-ostree', 'status', '--json'), stdout=subprocess.PIPE).stdout)
-        self.set_child(DeploymentInfoPage(data['deployments'][0]))
+        self.package_list.set_child(PackageList(sorted(data['deployments'][0]['packages'])))
 
     @spinthread
     def on_install_input(self, _e):
@@ -78,7 +99,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     @spinthread
     def uninstall_selected(self, _w, _e):
-        selected_packages=[item.name_label.get_label() for item in self.get_child().package_list.get_selected_rows()]
+        selected_packages=[item.name_label.get_label() for item in self.package_list.get_child().get_child().get_selected_rows()]
         if not selected_packages:
             return
         selected_packages.sort()
@@ -129,14 +150,34 @@ class AboutPopup(Gtk.AboutDialog):
         self.set_transient_for(parent)
         self.present()
 
+
 @templated
-class DeploymentInfoPage(Gtk.ScrolledWindow):
-    __gtype_name__='DeploymentInfoPage'
+class SearchWindow(Gtk.Dialog):
+    __gtype_name__ = 'SearchWindow'
+    search_entry = Gtk.Template.Child('search_entry')
     package_list = Gtk.Template.Child('package_list')
-    def __init__(self, data):
+    def __init__(self, parent):
         super().__init__()
-        for i in sorted(data['packages']):
-            self.package_list.append(PackageListItem(i))
+        self.set_modal(True)
+        self.set_transient_for(parent)
+        self.present()
+        self.search_entry.connect('activate', self.query)
+
+    def query(self, _e):
+        q=self.search_entry.get_buffer().get_text()
+        results=search(q)
+        results.sort(key=lambda s:Levenshtein.distance(q,s))
+        self.package_list.set_child(PackageList(results))
+
+
+class PackageList(Gtk.ListBox):
+    __gtype_name__ = 'PackageList'
+    def __init__(self, data):
+        super().__init__(
+            selection_mode=3,
+        )
+        for i in data:
+            self.append(PackageListItem(i))
 
 @templated
 class PackageListItem(Gtk.ListBoxRow):

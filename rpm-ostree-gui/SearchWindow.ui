@@ -1,0 +1,31 @@
+<!--
+Copyright 2022 epiccakeking
+
+This file is part of rpm-ostree-gui.
+
+rpm-ostree-gui is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+rpm-ostree-gui is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with rpm-ostree-gui. If not, see <https://www.gnu.org/licenses/>.
+-->
+<interface>
+  <template class="SearchWindow" parent="GtkDialog">
+    <property name='default-width'>500</property>
+    <property name='default-height'>500</property>
+    <property name="title">RPM OSTree GUI</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
+        <child>
+          <object class="GtkEntry" id="search_entry"></object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="package_list">
+            <property name="vexpand">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
